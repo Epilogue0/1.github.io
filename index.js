@@ -2,8 +2,8 @@ var S = {
     init: function () {
         S.Drawing.init('.canvas');
         document.body.classList.add('body--ready');
-        // 改成直接显示蛋糕（点阵）并添加蜡烛
-        S.UI.simulate("#cake");
+        // 先依次显示祝福文字（快速），最后显示蛋糕点阵
+        S.UI.simulate("祝|你|生|日|快|乐|！|#cake");
         S.Drawing.loop(function () {
             S.Shape.render();
             // 在点阵渲染后绘制蜡烛和闪光（覆盖层）
@@ -55,7 +55,7 @@ S.Drawing = (function () {
             context.closePath();
             context.fill();
         },
-        // 新增：在点阵上绘制蜡烛与闪光（覆盖层），使用 Canvas 原生绘制
+        // 在点阵上绘制蜡烛与闪光（覆盖层）
         drawCakeAndCandles: function (bounds) {
             if (!bounds || !bounds.width) return;
             var now = Date.now();
@@ -82,7 +82,7 @@ S.Drawing = (function () {
                 ctx.fillStyle = 'rgba(255,245,220,0.95)';
                 ctx.beginPath();
                 ctx.moveTo(x, y);
-                var steps = Math.floor(w / 12);
+                var steps = Math.max(4, Math.floor(w / 12));
                 for (var s = 0; s <= steps; s++) {
                     var sx = x + (s / steps) * w;
                     var sy = y - (4 + Math.sin((s + now / 200) * 0.5) * 4);
@@ -167,7 +167,8 @@ S.UI = (function () {
         time,
         maxShapeSize = 30,
         sequence = [],
-        cmd = '#';
+        cmd = '#',
+        baseDelay = 900; // 每个序列项显示的间隔(ms)，中文字符显示会更顺畅
     function formatTime(date) {
         var h = date.getHours(),
             m = date.getMinutes(),
@@ -249,13 +250,18 @@ S.UI = (function () {
                     S.Shape.switchShape(S.ShapeBuilder.cake());
                     break;
                 default:
+                    // 默认把 current 字符作为 Shape 显示（支持中文）
                     S.Shape.switchShape(S.ShapeBuilder.letter(current[0] === cmd ? 'HacPai' : current));
             }
-        }, 2000, sequence.length);
+        }, baseDelay, sequence.length);
     }
     return {
         simulate: function (action) {
             performAction(action);
+        },
+        // 提供可外部调整速度的接口（可选）
+        setSpeed: function(ms){
+            baseDelay = ms;
         }
     };
 }());
@@ -377,7 +383,8 @@ S.ShapeBuilder = (function () {
         shapeCanvas = document.createElement('canvas'),
         shapeContext = shapeCanvas.getContext('2d'),
         fontSize = 500,
-        fontFamily = 'Avenir, Helvetica Neue, Helvetica, Arial, sans-serif';
+        // 加入中文字体以提高中文显示效果
+        fontFamily = 'Microsoft YaHei, "PingFang SC", "Noto Sans CJK SC", Avenir, Helvetica Neue, Helvetica, Arial, sans-serif';
     function fit() {
         shapeCanvas.width = Math.floor(window.innerWidth / gap) * gap;
         shapeCanvas.height = Math.floor(window.innerHeight / gap) * gap;
@@ -475,7 +482,7 @@ S.ShapeBuilder = (function () {
             }
             return {dots: dots, w: width, h: height};
         },
-        // 新增：生成蛋糕点阵（分层矩形）供 Shape 使用
+        // 生成蛋糕点阵（分层矩形）供 Shape 使用
         cake: function (tiers) {
             tiers = tiers || 3;
             var dots = [];
@@ -594,7 +601,7 @@ S.Shape = (function () {
                 dots[d].render();
             }
         },
-        // 新增：允许外部查询当前形状边界（用于定位蜡烛）
+        // 允许外部查询当前形状边界（用于定位蜡烛）
         getBounds: function () {
             return {cx: cx, cy: cy, width: width, height: height};
         }
