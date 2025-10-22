@@ -1,38 +1,90 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8" />
     <title>生日快乐</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <style>
+        /* 小幅内联样式保证基本可视性（你已有 style.css，可删除这部分或移入 style.css） */
+        html,body{height:100%;margin:0;background:#071021;overflow:hidden;font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Helvetica, Arial;}
+        .canvas{display:block; position:relative; margin:0 auto; z-index:1;}
+        #github{position:fixed; right:10px; top:10px; width:90px; opacity:0.9; z-index:999;}
+        .cs{position:fixed; left:18px; top:18px; z-index:999;}
+        .cs img#logo{width:72px;height:72px;border-radius:50%;}
+        .text{position:fixed; left:20px; bottom:18px; color:#BBE1FA; z-index:999; font-size:16px; line-height:1.4;}
+        #audio-control{position:fixed; right:18px; bottom:18px; z-index:999; color:#BBE1FA; font-size:14px; background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; cursor:pointer;}
+        footer{position:fixed; left:50%; transform:translateX(-50%); bottom:6px; z-index:998; color:#BBE1FA; font-size:13px;}
+    </style>
 </head>
-
 <body>
-    <!-- github 可以删除-->
-    <a href="https://github.com/Lincest/happybirthday">
+    <!-- github 可以删除 -->
+    <a href="https://github.com/Lincest/happybirthday" target="_blank" rel="noopener">
         <img id="github" src="https://youpai.roccoshi.top/img/20200801200801.png" alt="Fork me on GitHub">
     </a>
+
     <!-- 头像 -->
     <div class="cs">
-        <img src="https://youpai.roccoshi.top/img/20200801202340.png" id="logo">
+        <img src="https://youpai.roccoshi.top/img/20200801202340.png" id="logo" alt="头像">
     </div>
-    <canvas class="canvas" width="1820" height="905"></canvas>
-    <!-- 出生计时 -->
+
+    <!-- canvas：大小由 index.js 动态设置 -->
+    <canvas class="canvas"></canvas>
+
+    <!-- 出生计时（time.js 会填充 span） -->
     <p class="text">
         杨莹莹来到这个世界已经 <br />
         <span id="span_dt_dt"></span>
     </p>
-</body>
-<!--  设定出生日期 -->
-<script type="text/javascript" src="time.js"></script>
-<!-- canvas动画 -->
-<script type="text/javascript" src="index.js"></script>
-<!-- 背景音乐 -->
-<audio id="music" src="./happybirthday.mp3" autoplay preload="auto" loop="loop">该浏览器不支持audio属性</audio>
-<!-- copyright -->
-<footer style="color: #BBE1FA; text-align:center;">
-    <font size="2" color=#BBE1FA>©2020 生日快乐 &nbsp 我的朋友</font>
-</footer>
 
+    <!-- 音乐与控制（多数浏览器会阻止未交互的自动播放，提供手动播放按钮） -->
+    <audio id="music" src="./happybirthday.mp3" preload="auto" loop></audio>
+    <div id="audio-control">播放音乐 ▶</div>
+
+    <!-- copyright -->
+    <footer>© 生日快乐 &nbsp; 杨莹莹</footer>
+
+    <!-- 设定出生日期 -->
+    <script type="text/javascript" src="time.js"></script>
+
+    <!-- canvas动画（请确保 index.js 是我们为你修改的最新版） -->
+    <script type="text/javascript" src="index.js"></script>
+
+    <!-- 小脚本：处理按钮播放/暂停音乐，以及在页面 load 时保障 canvas 调整 -->
+    <script>
+        // 音频控制（部分浏览器会要求用户交互才能播放）
+        (function () {
+            var audio = document.getElementById('music');
+            var btn = document.getElementById('audio-control');
+
+            function updateLabel() {
+                if (audio.paused) {
+                    btn.textContent = '播放音乐 ▶';
+                } else {
+                    btn.textContent = '暂停音乐 ■';
+                }
+            }
+
+            btn.addEventListener('click', function () {
+                if (audio.paused) {
+                    audio.play().then(updateLabel).catch(function () {
+                        // 若播放被拒绝，提示用户
+                        alert('浏览器阻止自动播放，请在允许声音后再次点击播放。');
+                    });
+                } else {
+                    audio.pause();
+                    updateLabel();
+                }
+            });
+
+            // 页面可见后尝试静默播放（若浏览器允许）
+            window.addEventListener('load', function () {
+                // 触发 index.js 的 S.init() 后，canvas 会被调整
+                try { if (typeof S !== 'undefined' && S.Drawing && typeof S.Drawing.adjustCanvas === 'function') S.Drawing.adjustCanvas(); } catch (e) {}
+                // 尝试自动 play（若被阻止不会抛出致命错误）
+                audio.play().then(updateLabel).catch(function(){ updateLabel(); });
+            });
+        })();
+    </script>
+</body>
 </html>
