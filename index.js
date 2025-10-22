@@ -6,7 +6,7 @@ var S = {
         S.Drawing.init('.canvas');
         document.body.classList.add('body--ready');
         // 启动生日序列（逐字累加），参数：短句、每字间隔、完整后停留时间
-        S.UI.startBirthdaySequence('祝你生日快乐！', 700, 1000);
+        S.UI.startBirthdaySequence('祝你生日快乐！', 1400, 1200); // <-- 这里的 1400ms 是每字间隔（已延长）
         S.Drawing.loop(function () {
             S.Shape.render();
             // 只有进入蛋糕模式时才绘制蜡烛（否则不出现）
@@ -168,8 +168,8 @@ S.Drawing = (function () {
 
 // ========== UI / 控制逻辑 ==========
 S.UI = (function () {
-    var perCharDelay = 700; // 每个累加步间隔（ms），默认可通过 setSpeeds 调整
-    var holdDelay = 1000;   // 全句显示后停留时间 (ms)
+    var perCharDelay = 1400; // 每个累加步间隔（ms）——已延长
+    var holdDelay = 1200;   // 全句显示后停留时间 (ms)
 
     // 提供外部接口调整速度
     function setSpeeds(charDelay, fullHold) {
