@@ -246,8 +246,13 @@ S.UI = (function () {
                     }
                     break;
                 case 'cake':
-                    // 可带参数：'#cake 3' 表示层数（暂时未使用），直接生成蛋糕点阵
-                    S.Shape.switchShape(S.ShapeBuilder.cake());
+                    // 当遇到 cake 指令时，延迟一个 baseDelay 再切换为蛋糕点阵，
+                    // 确保“祝你生日快乐！”最后一个字的点阵动画有时间完成
+                    (function(delay){
+                        setTimeout(function(){
+                            S.Shape.switchShape(S.ShapeBuilder.cake());
+                        }, delay || baseDelay);
+                    })(baseDelay);
                     break;
                 default:
                     // 默认把 current 字符作为 Shape 显示（支持中文）
